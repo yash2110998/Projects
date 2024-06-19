@@ -1,0 +1,99 @@
+print("Welcome to Pandas")
+
+import pandas as pd
+
+data = {
+    "Day": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "Visitors": [18, 26, 18, 18, 9, 9, 20, 30, 16, 24],
+    "Bounce_Rate": [77.27, 74.07, 73.68, 65, 90, 70, 72, 62.16, 81.25, 72],
+}
+
+df = pd.DataFrame(data)
+print(df)
+
+
+a = [1,7,2]
+
+myvar = pd.Series(a)
+myvar = pd.Series(a, index = ["x", "y", "z"])
+print(myvar[0])
+print(myvar)
+print(myvar["y"])
+
+calories = {"day1": 420, "day2": 380, "day3": 390}
+
+myvar = pd.Series(calories)
+myvar = pd.Series(calories, index = ["day1", "day2"])
+print(myvar)
+
+data = {
+  "calories": [420, 380, 390],
+  "duration": [50, 40, 45]
+}
+
+myvar = pd.DataFrame(data)
+
+print(myvar)
+#Series is like a column, a DataFrame is the whole table.
+
+df = pd.read_csv(r"C:\Users\Thinkpad\Downloads\data.csv")
+print(df.head())
+print(df.tail())
+
+print(df.to_string()) 
+#use to_string() to print the entire DataFrame.
+print(pd.options.display.max_rows)
+
+pd.options.display.max_rows = 9999
+print(df) 
+
+print(df.info())
+
+##** Data Cleaning **##
+#Data cleaning means fixing bad data in your data set.
+#Bad data could be:
+#Empty cells
+#Data in wrong format
+#Wrong data
+#Duplicates
+
+new_df = df.dropna()
+print(new_df.to_string())
+
+df.dropna(inplace = True)
+
+print(df.to_string())
+#Now, the dropna(inplace = True) will NOT return a new DataFrame, but it will remove all rows containing NULL values from the original DataFrame.
+#The fillna() method allows us to replace empty cells with a value
+df.fillna(130, inplace = True)
+df["Calories"].fillna(130, inplace = True)
+print(df.to_string())
+x = df["Calories"].mean()
+df["Calories"].fillna(x, inplace = True)
+print(x)
+
+y = df["Calories"].median()
+print(y)
+df["Calories"].fillna(y, inplace = True)
+print(df.to_string())
+
+##Removing Duplicates##
+
+print(df.duplicated())
+
+df.drop_duplicates(inplace = True)
+print(df.to_string())
+
+#How to remove wrong data?
+#ans : 1. By replacing it with another value
+#      2. By removing the rows using df.drop(x, inplace = True)
+#      3.o replace wrong data for larger data sets you can create some rules, e.g. set some boundaries for legal values, and replace any values that are outside of the boundaries.
+# syntax 
+for x in df.index:
+ if df.loc[x, "Duration"] > 120:
+   df.loc[x, "Duration"] = 120  
+
+ for x in df.index:
+  if df.loc[x, "Duration"] > 120:
+    df.drop(x, inplace = True)
+
