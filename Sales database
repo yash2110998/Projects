@@ -1,0 +1,116 @@
+select * from sales;
+select * from geo;
+select * from product;
+select * from people;
+
+select SaleDate, Amount, Customers from sales;
+
+select Amount, Customers, GeoID from sales;
+
+Select SaleDate, Amount, Boxes, Amount/Boxes from sales;
+Select SaleDate, Amount, Boxes, Amount/Boxes as 'Amount per box' from sales;
+
+select * from sales
+where amount>10000
+order by amount desc;
+
+select * from sales
+where geoid = 'g1'
+order by PID, amount desc;
+
+select * from sales
+where amount > 10000 and SaleDate >= '2022-01-01';
+
+select SaleDate, amount from sales
+where amount > 10000 and year(SaleDate)=2022
+order by amount desc;
+
+
+select * from sales
+where boxes > 0 and boxes <=50;
+
+select * from sales
+where boxes between 0 and 50;
+
+select Saledate, Amount, Boxes, weekday(SaleDate)
+from sales
+where weekday(SaleDate)= 4;
+
+Select * from people
+where team = 'Delish' or team = 'Jucies';
+
+select * from people
+where team in ('Delish', 'Jucies');
+
+select * from people
+where salesperson like 'B%';
+
+select * from people
+where salesperson like '%B%';
+
+select * from sales;
+
+select SaleDate, Amount,
+	   case  when Amount<1000 then 'under 1k'
+			 when Amount<5000 then 'under 5k'
+             when Amount<10000 then 'under 10k'
+		else '10k or more'
+	end as 'Amount Category'
+from sales;
+
+select * from sales;
+
+select * from people;
+
+
+select s.SaleDate, s.Amount, p.salesperson, s.SPID, p.SPID
+from sales s 
+join people p on p.SPID=s.SPID;
+
+select s.SaleDate, s.Amount, pr.Product
+from sales s
+left join products pr on pr.PID = s.PID;
+
+select s.SaleDate, s.Amount, p.SalesPerson, pr.product, p.team
+from sales s
+join people p on p.SPID = s.SPID
+join products pr on pr.PID = s.PID;
+
+select s.SaleDate, s.Amount, p.SalesPerson, pr.product, p.team
+from sales s
+join people p on p.SPID = s.SPID
+join products pr on pr.PID = s.PID
+where s.amount < 500
+and p.Team = 'Delish'; 
+
+select s.SaleDate, s.Amount, p.SalesPerson, pr.product, p.team
+from sales s
+join people p on p.SPID = s.SPID
+join products pr on pr.PID = s.PID
+join geo g on g.GeoID = s.GeoID
+where s.amount < 500
+and p.team = 'Jucies'
+and g.Geo in ('New Zealand' , 'India')
+order by SaleDate;
+
+
+#USing Group by Clause: Summary of Data for report making just like Pivot table
+
+select g.Geo, sum(amount), avg(amount), sum(boxes)
+from sales s
+join geo g on s.GeoID = g.GeoID
+group by g.Geo;
+
+select pr.category, p.team,sum(boxes), sum(amount)
+from sales s
+join people p on p.spid = s.spid
+join products pr on pr.pid = s.pid
+where p.team <> ''
+group by pr.category, p.team
+order by pr.category, p.team;
+
+select pr.Product, sum(s.amount) as 'Total Amount'
+from sales s
+join products pr on pr.pid = s.pid
+group by pr.Product
+order by 'Total Amount' desc limit 10;
