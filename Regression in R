@@ -1,0 +1,98 @@
+library(tidyverse)
+# Load the mtcars dataset
+data(mtcars)
+mtcars
+# Perform simple linear regression of mpg on wt
+lm(mpg ~ wt, data = mtcars)
+# Perform multiple linear regression of mpg on wt and cyl
+lm(mpg ~ wt + cyl, data = mtcars)
+
+#Interpreting the Output
+
+#The output of the lm() function includes several important statistics:
+#Coefficients: The estimated coefficients for the intercept and slopes of the regression line.
+#Std. Error: The standard errors of the coefficients.
+#t value: The t-statistic for each coefficient.
+#Pr(>|t|): The p-value for each coefficient.
+#use these statistics to:
+#Check the significance of each predictor variable (p-value < 0.05)
+#Estimate the effect size of each predictor variable (coefficient)
+#Calculate the R-squared value (proportion of variance explained by the model)
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("broom")
+install.packages("car")
+install.packages("MASS")
+install.packages("caret")
+install.packages("glmnet")
+
+model <- lm(mpg ~ wt, data = mtcars)
+
+library(ggplot2)
+plot(mtcars$wt, mtcars$mpg)
+# Residuals
+residuals(model)
+
+# Summary statistics
+summary(model)
+
+# Diagnostic plots
+plot(model)
+abline(model)
+
+
+# logistic regression model
+
+library(MASS)
+data(mtcars)
+# Convert the 'am' column to a factor variable from numeric varaible (0 = automatic, 1 = manual)
+mtcars$am <- as.factor(mtcars$am)
+#By converting it to a factor, you're telling R to treat am as a categorical variable with two distinct levels, rather than a continuous numeric variable.
+
+
+# Fit a logistic regression model
+model <- glm(am ~ mpg + hp + wt, data = mtcars, family = binomial)
+#glm() is a function for fitting generalized linear models, which includes logistic regression as a special case.
+model
+#am is the response variable (the outcome we're trying to predict), which is a binary factor (0 or 1) indicating the transmission type (automatic or manual).
+#mpg, hp, and wt are the predictor variables (the features we're using to predict the outcome).
+#The ~ symbol separates the response variable from the predictor variable, family = binomial, specifies the distribution of the response variable and the link function to use.
+summary(model)
+
+# Predict the probability of manual transmission
+predictions <- predict(model, type = "response") #This line of code is generating predictions from the logistic regression model!
+#In this case, type = "response" tells predict() to generate the predicted probabilities of the response variable (am) being 1 (i.e., manual transmission). These probabilities are the output of the logistic function, which maps the linear predictor to a probability between 0 and 1.
+predictions
+# Convert probabilities to binary outcomes using a threshold of 0.5
+predicted_classes <- ifelse(predictions > 0.5, 1, 0)
+predicted_classes
+#This line of code is converting the predicted probabilities into binary classes!
+#Here's what's happening:
+#ifelse() is a function that performs a conditional test and returns one value if the test is true and another value if the test is false.
+#predictions > 0.5 is the test condition, which checks if the predicted probability is greater than 0.5.
+#1 is the value returned if the test is true (i.e., the predicted probability is greater than 0.5).
+#0 is the value returned if the test is false (i.e., the predicted probability is less than or equal to 0.5).
+#By using a threshold of 0.5, you're essentially saying that if the model predicts a probability of manual transmission greater than 0.5, you'll classify it as a manual transmission (1), and otherwise, you'll classify it as an automatic transmission (0).
+
+
+# Print the confusion matrix
+table(Predicted = predicted_classes, Actual = mtcars$am)
+#This line of code is printing a confusion matrix to evaluate the performance of the logistic regression model!
+#table() is a function that creates a contingency table (a.k.a. a confusion matrix) from the input data.
+#Predicted = predicted_classes specifies the predicted classes from the model, which should be a vector of 0s and 1s indicating the predicted transmission type (automatic or manual).
+#Actual = mtcars$am specifies the actual classes from the mtcars dataset, which is the true transmission type (0 for automatic, 1 for manual).
+#The resulting table will show the number of true positives (TP), true negatives (TN), false positives (FP), and false negatives (FN) in the model's predictions.
+
+#In this example, the model:
+#Correctly predicted 18 automatic transmissions (TP)
+#Correctly predicted 12 manual transmissions (TN)
+#Incorrectly predicted 1 manual transmissions as automatic (FP)
+#Incorrectly predicted 1 automatic transmissions as manual (FN)
+#From this confusion matrix, you can calculate various performance metrics, such as:
+
+#Accuracy: (TP + TN) / (TP + TN + FP + FN)
+#Precision: TP / (TP + FP)
+#Recall: TP / (TP + FN)
+#F1-score: 2 * (Precision * Recall) / (Precision + Recall)
+#These metrics will give you a better understanding of how well the model is performing and where it might need improvement.
+
