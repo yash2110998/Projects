@@ -1,0 +1,196 @@
+library(readxl)
+gdp <- read_excel("C:\\Users\\Thinkpad\\Downloads\\time series GDP-ARIMA youtube.xlsx")
+View(gdp)
+class(gdp)
+library(tseries)
+library(forecast)
+library(ggplot2)
+gdptime = ts(gdp$GDP, start = min(gdp$DATE), end = max(gdp$DATE), frequency = 4)
+#This code creates a time series object in R from a dataset called gdp.
+#ts(): This is the function to create a time series object in R.
+#gdp$GDP: This is the variable that contains the values of the GDP (Gross Domestic Product) data. The $ symbol is used to access a column of a data frame.
+#start = min(gdp$DATE): This specifies the starting point of the time series. In this case, it's set to the minimum value of the DATE column in the gdp data frame.
+#end = max(gdp$DATE): This specifies the ending point of the time series. In this case, it's set to the maximum value of the DATE column in the gdp data frame.
+#frequency = 4: This specifies the frequency of the time series. In this case, it's set to 4, which means the data is quarterly (i.e., there are 4 observations per year).
+class(gdptime)
+plot(gdptime) # It shows that there is a trend component in data so its not stationary
+acf(gdptime) # it explains that autocorrelation is present in data
+pacf(gdptime) # it shows that there is no autocorrellation in data set
+adf.test(gdptime)
+#since p-value is greater than 5% level of significance hence the data is non stationary
+gdpmodel = auto.arima(gdptime, ic = "aic", trace = TRUE)
+# When you run this code, the auto.arima() function will automatically select the best ARIMA model for the gdptime time series data based on the AIC criterion which is ARIMA(0,2,2)
+#The trace = TRUE argument will also provide additional information about the model selection process, which can be useful for understanding how the function arrived at the selected model.
+acf(ts(gdpmodel$residuals)) # no AC in data
+pacf(ts(gdpmodel$residuals)) # no AC in data
+#once our model is identified and estimated we need to run diagnostic of residuals and check whether they are stationary
+
+mygdpforecast = forecast(gdpmodel, level = c(95), h= 10*4)
+
+mygdpforecast
+plot(mygdpforecast)
+Box.test(mygdpforecast$residuals, lag = 5, type = "Ljung-Box")
+Box.test(mygdpforecast$residuals, lag = 15, type = "Ljung-Box")
+Box.test(mygdpforecast$residuals, lag = 25, type = "Ljung-Box")
+# H0 :  residuals are randomly distributed
+# H1 :  there is significant autocorrelation present
+#If the p-value of the test is below a certain significance level (e.g. 0.05), the null hypothesis is rejected, indicating that there is significant autocorrelation in the residuals.
+#In the context of time series forecasting, the Ljung-Box test is often used to evaluate the quality of a model's residuals. If the residuals are randomly distributed, it suggests that the model has captured the underlying patterns in the data and is making accurate predictions. However, if there is significant autocorrelation in the residuals, it may indicate that the model is not capturing all the patterns in the data, and further refinement may be necessary.
+
+
+#timer series modelling in R
+
+library(tseries)
+library(forecast)
+library(ggplot2)
+
+data("AirPassengers")
+print(AirPassengers)
+summary(AirPassengers)
+
+# Plot the time series
+autoplot(AirPassengers) + ggtitle("Monthly International Airline Passengers") +
+  xlab("Year") + ylab("Passengers")
+#it shows there is trend in data which is trending upwards
+
+# Decompose the time series
+decomposed <- decompose(AirPassengers)
+decomposed
+# Plot the decomposed components
+autoplot(decomposed) + ggtitle("Decomposed Time Series Components")
+
+# Perform Augmented Dickey-Fuller test for stationarity
+adf_test <- adf.test(AirPassengers)
+
+# Print the ADF test result
+print(adf_test)
+#If the p-value is greater than 0.05, the series is non-stationary, and differencing might be needed.
+
+# Differencing the data
+diff_data <- diff(AirPassengers)
+diff_data
+# Plot the differenced data
+autoplot(diff_data) + ggtitle("Differenced Time Series")
+
+# Fit an ARIMA model
+fit <- auto.arima(AirPassengers)
+fit
+# Print model summary
+summary(fit)
+
+# Plot the residuals
+checkresiduals(fit)
+
+#ME (Mean Error): The mean error is the average difference between the observed and predicted values. A value close to zero indicates that the model is unbiased. 
+#RMSE (Root Mean Squared Error): The root mean squared error is a measure of the average magnitude of the errors.A lower RMSE indicates better fit.
+#MAE(mean absolute error) : It's a measure of the average magnitude of the errors, without considering the direction of the errors. A lower MAE indicates better fit.
+#MPE (Mean Percentage Error): The mean percentage error is the average of the percentage differences between the observed and predicted values.A value close to zero indicates that the model is accurate.
+#MAPE: The mean absolute percentage error is the average of the absolute percentage differences between the observed and predicted values. It's a measure of the average relative error, without considering the direction of the errors. A lower MAPE indicates better fit.
+#MASE (Mean Absolute Scaled Error): The mean absolute scaled error is a measure of the average magnitude of the errors, scaled by the mean absolute error of the naive model (which simply forecasts the previous value). A MASE value close to zero indicates that the model is accurate. 
+
+# Forecast the next 24 periods (2 years)
+forecasted <- forecast(fit, h=24)
+forecasted
+# Plot the forecast
+autoplot(forecasted) + ggtitle("Forecast of AirPassengers")
+
+
+
+
+#what is decomposing of time sereis?
+
+# Load necessary library
+library(forecast)
+library(ggplot2)
+
+# Load the AirPassengers dataset
+data("AirPassengers")
+
+# Plot the original time series
+autoplot(AirPassengers) + ggtitle("Monthly International Airline Passengers") +
+  xlab("Year") + ylab("Passengers")
+
+# Decompose the time series using multiplicative decomposition
+decomposed <- decompose(AirPassengers, type = "multiplicative")
+decomposed
+# Plot the decomposed components
+autoplot(decomposed) + ggtitle("Decomposed Time Series Components")
+
+# Components of the decomposed time series
+trend <- decomposed$trend
+seasonal <- decomposed$seasonal
+irregular <- decomposed$random
+
+# Plot each component separately
+autoplot(trend) + ggtitle("Trend Component")
+autoplot(seasonal) + ggtitle("Seasonal Component")
+autoplot(irregular) + ggtitle("Irregular Component")
+
+
+#training models measures i.e to measure the accuracy of models
+
+# Sample actual and predicted values
+actual <- c(100, 150, 200, 250, 300)
+predicted <- c(110, 145, 195, 240, 310)
+
+# Calculate MAE
+mae <- mean(abs(actual - predicted))
+print(paste("Mean Absolute Error (MAE):", mae))
+
+# Calculate MSE
+mse <- mean((actual - predicted)^2)
+print(paste("Mean Squared Error (MSE):", mse))
+
+# Calculate RMSE
+rmse <- sqrt(mse)
+print(paste("Root Mean Squared Error (RMSE):", rmse))
+
+# Calculate MAPE
+mape <- mean(abs((actual - predicted) / actual)) * 100
+print(paste("Mean Absolute Percentage Error (MAPE):", mape, "%"))
+
+
+#Interpretation
+#MAE: Provides a linear score which means that all the individual differences are weighted equally in the average.
+#MSE: Provides a quadratic score which means that larger differences are weighted more heavily.
+#RMSE: Provides a score in the same units as the data, making it easier to interpret.
+#MAPE: Provides a percentage score which can be easier to interpret for stakeholders but can be problematic if actual values are close to zeroR)
+
+install.packages("AER")
+# Load necessary libraries
+library(AER)
+
+# Example data: we will simulate some data for demonstration
+set.seed(123)
+n <- 100
+income <- rnorm(n, mean = 50, sd = 10)  # Exogenous variable
+summary(income)
+hist(income, main = "Income Distribution", xlab = "Income", col = "lightblue", border = "black")
+plot(density(income), main = "Income Density", xlab = "Income", col = "blue")
+t.test(income, mu = 50)
+
+cost <- rnorm(n, mean = 20, sd = 5)     # Exogenous variable
+summary(cost)
+hist(cost, main = "cost Distribution", xlab = "cost", col = "lightgreen", border = "blue")
+plot(density(income), main = "Income Density", xlab = "Income", col = "red")
+t.test(cost, mu = 50)
+
+price <- 5 + 0.5 * income + rnorm(n)    # Endogenous variable influenced by income
+price
+
+demand <- 100 - 2 * price + 0.3 * income + rnorm(n)  # Endogenous variable
+demand
+
+supply <- 50 + 3 * price - 0.2 * cost + rnorm(n)    # Endogenous variable
+supply
+
+# Combine into a data frame
+data <- data.frame(demand, supply, price, income, cost)
+data
+
+# Fit a simple regression model with demand as the endogenous variable
+demand_model <- lm(demand ~ price + income, data = data)
+summary(demand_model)
+
+# The model assumes price and income as exogenous to demand, though price is actually endogenous
+
