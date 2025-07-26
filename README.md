@@ -1,5 +1,5 @@
 Daily Temperature Time Series Forecasting
-Overview
+
 This project provides a comprehensive workflow for forecasting daily minimum temperatures using time series analysis techniques. The main goal is to help users predict future temperature values based on historical data, which is essential for planning in sectors like agriculture, energy management, and climate research.
 
 Problem Statement
